@@ -98,7 +98,7 @@ public class ApplicationManagementTest extends BaseTest {
 
         // Получаем данные после обновления
         List<List<String>> refreshedTableData = am.getTableData();
-
+//
 
         softAssert.assertNotNull(refreshedTableData, "Таблица после обновления не должна быть null");
         softAssert.assertFalse(refreshedTableData.isEmpty(), "Таблица после обновления не должна быть пустой");
