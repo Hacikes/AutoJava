@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="All Test Suite" time-out="60000">
+    <test verbose="2" name="FullStackQA/test" thread-count="2" parallel="methods">
+        <classes>
+<!--            <class name="org.qateams.tests.FirstTest">-->
+<!--                <methods>-->
+<!--                    <include name="test2"/>-->
+<!--                    <include name="test3"/>-->
+<!--                </methods>-->
+<!--            </class>-->
+            <class name="org.qateams.tests.HomePageTest">
+                <methods>
+                    <include name="viewHomePage"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>
