@@ -51,6 +51,8 @@ public class ApplicationManagement {
     private final By buttonPaginationNext = buildXpath(tablePagination, "//li[last()]");
 
 
+
+
     // Локаторы кнопок Закрыть и Далее
     private final By buttonClose = buildXpath(tableContainer, "/div[2]/button[1]");
     private final By buttonRefresh = buildXpath(tableContainer, "/div[2]/button[2]");
@@ -219,13 +221,34 @@ public class ApplicationManagement {
         return DriverManager.getDriver().findElement(windowTitle);
     }
 
+//    public WebElement getButtonPaginationNext() {
+//        return DriverManager.getDriver().findElement(buttonPaginationNext);
+//    }
+//
+//    public WebElement getButtonPaginationBack() {
+//        return DriverManager.getDriver().findElement(buttonPaginationBack);
+//    }
 
-    public void paginationButton(boolean direction) {
-        By actionDirection = direction
-                ? buttonPaginationBack
-                : buttonPaginationNext;
-        DriverManager.getDriver().findElement(actionDirection).click();
+
+    public WebElement getPaginationButton(boolean isNextButton) {
+        By actionDirection = isNextButton
+                ? buttonPaginationNext
+                : buttonPaginationBack;
+        return DriverManager.getDriver().findElement(actionDirection);
     }
+
+    public void clickPaginationButton(boolean isNextButton) {
+        getPaginationButton(isNextButton).click();
+    }
+
+    // Проверка доступности кнопки для нажатия
+    public WebElement checkedPaginationButtonFocus(boolean isNextButton) {
+        WebElement paginationButton = getPaginationButton(isNextButton);
+        WebElement button = paginationButton.findElement(By.xpath(".//button"));
+        return button;
+    }
+
+
 
 
 

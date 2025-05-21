@@ -16,6 +16,7 @@ import org.testng.asserts.SoftAssert;
 
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
@@ -125,7 +126,7 @@ public class ApplicationManagementTest extends BaseTest {
     }
 
 
-    // Проверка отображения и активности кнопки
+    // Проверка отображения и активности кнопок закрытия и обнволения
     @Test
     public void testButtonsVisibilityAndEnabled() {
 //        SoftAssert softAssert = new SoftAssert();
@@ -143,15 +144,79 @@ public class ApplicationManagementTest extends BaseTest {
 //        softAssert.assertAll();
     }
 
-    // Проверка доступности нажатия на кнопки пагинации
-//    @Test
-//    public void testPaginationDisplayed(){
-//        int applicantCount = am.getTableData().size();
-//        System.out.println(applicantCount);
-//        if(applicantCount < 200) {
-//            softAssert.assertEquals();
-//        }
-//    }
+    // Проверка доступности нажатия на кнопки пагинации и нажатия на них
+    @Test
+    public void testPaginationDisplayed() {
+
+        int applicantCount = am.getTableData().size();
+
+        if(applicantCount <= 200) {
+            softAssert.assertFalse(am.checkedPaginationButtonFocus(true).isEnabled(), "Кнопка пагинации вперёд должна быть неактивна");
+            softAssert.assertFalse(am.checkedPaginationButtonFocus(false).isEnabled(), "Кнопка пагинации назад должна быть неактивна");
+        } else {
+            softAssert.assertTrue(am.checkedPaginationButtonFocus(true).isEnabled(), "Кнопка пагинации вперёд должна быть активна");
+            softAssert.assertTrue(am.checkedPaginationButtonFocus(false).isEnabled(), "Кнопка пагинации назад должна быть активна");
+        }
+    }
+
+
+    // Проверка, что пагинация пагинирует и отображает отличные от прошлого списка номера заявок
+    @Test
+    public void testClickPaginationButtons() {
+
+        // Шаг 1: Проверка доступности пагинации
+        WebElement nextPageButton = am.checkedPaginationButtonFocus(true);
+
+        softAssert.assertTrue(nextPageButton.isEnabled(), "Кнопка перехода на следующую страницу должна быть активна");
+
+        if(am.getPaginationButton(true).isEnabled()) {
+
+            // Шаг 2: Получение initial данных
+            List<List<String>> initialTableData = am.getTableData();
+            List<String> initialApplicationNumbers = extractApplicationNumbers(initialTableData);
+
+            // Шаг 3: Переход на следующую страницу
+            am.clickPaginationButton(true);
+
+            // Шаг 4: Получение данных следующей страницы
+            List<List<String>> nextTableData = am.getTableData();
+            List<String> nextApplicationNumbers = extractApplicationNumbers(nextTableData);
+
+            // Шаг 5: Проверки
+            softAssert.assertNotNull(nextTableData, "Данные следующей страницы не должны быть null");
+            softAssert.assertFalse(nextTableData.isEmpty(), "Данные следующей страницы не должны быть пустыми");
+            softAssert.assertNotEquals(initialApplicationNumbers, nextApplicationNumbers, "Номера заявок на страницах должны отличаться"
+            );
+
+            // Шаг 6: Проверка доступности пагинации назад
+            WebElement backPageButton = am.checkedPaginationButtonFocus(false);
+            softAssert.assertTrue(backPageButton.isEnabled(), "Кнопка перехода на предыдущую страницу должна быть активна"
+            );
+
+            // Шаг 7: Переход на предыдущую страницу
+            am.clickPaginationButton(false);
+
+            // Шаг 8: Получение данных предыдущей страницы
+            List<List<String>> backTableData = am.getTableData();
+            List<String> backApplicationNumbers = extractApplicationNumbers(backTableData);
+
+            // Шаг 9: Проверки
+            softAssert.assertNotNull(backTableData, "Данные предыдущую страницы не должны быть null");
+            softAssert.assertFalse(backTableData.isEmpty(), "Данные предыдущую страницы не должны быть пустыми");
+            softAssert.assertNotEquals(nextApplicationNumbers, backApplicationNumbers, "Номера заявок на страницах должны отличаться"
+            );
+        } else {
+            softAssert.fail("Пагинация отсутствует или недоступна");
+        }
+
+    }
+
+
+    private List<String> extractApplicationNumbers(List<List<String>> tableData) {
+        return tableData.stream()
+                .map(row -> row.get(0))
+                .collect(Collectors.toList());
+    }
 
 }
 
