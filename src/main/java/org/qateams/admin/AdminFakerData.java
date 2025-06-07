@@ -1,4 +1,4 @@
-package org.qateams.components.admin;
+package org.qateams.admin;
 
 import com.github.javafaker.Faker;
 

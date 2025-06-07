@@ -1,8 +1,6 @@
 package org.qateams.utils;
 
-import org.openqa.selenium.WebDriver;
-import org.qateams.components.admin.AdminData;
-import org.qateams.driver.DriverManager;
+import org.qateams.admin.AdminData;
 import org.qateams.pages.HomePage;
 
 

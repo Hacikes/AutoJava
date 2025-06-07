@@ -1,14 +1,12 @@
-package org.qateams.components.admin;
+package org.qateams.admin.applicationmanagment;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.qateams.driver.DriverManager;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -104,7 +102,6 @@ public class ApplicationManagement {
     // Метод получения номера заявки в (по номеру строки)
     public int getApplicationNumber(int rowIndex) {
         By applicationNumber = getRowNumber(rowIndex);
-        System.out.println(applicationNumber);
         WebElement numberElement = DriverManager.getDriver().findElement(applicationNumber);
         String tempString = numberElement.getText().trim();
         return Integer.parseInt(tempString);

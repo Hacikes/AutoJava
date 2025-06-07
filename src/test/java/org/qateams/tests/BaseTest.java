@@ -2,7 +2,6 @@ package org.qateams.tests;
 
 import org.qateams.driver.Driver;
 import org.qateams.driver.DriverManager;
-import org.qateams.utils.ReactWaits;
 import org.qateams.utils.SoftAssertListener;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -18,9 +17,8 @@ public class BaseTest {
     }
 
     @BeforeMethod
-    protected void setUp(){
+    protected void setUp() {
         Driver.initDriver();
-//        ReactWaits.waitForReactReady(DriverManager.getDriver());
     }
 
     @AfterMethod
@@ -31,7 +29,6 @@ public class BaseTest {
 
 
     @BeforeMethod
-
     public void initSoftAssert() {
         softAssert = new SoftAssert();
     }
@@ -41,7 +38,6 @@ public class BaseTest {
         try {
             softAssert.assertAll();
         } catch (AssertionError e) {
-            // Логирование или дополнительная обработка
             System.err.println("Soft assertions failed: " + e.getMessage());
         }
     }

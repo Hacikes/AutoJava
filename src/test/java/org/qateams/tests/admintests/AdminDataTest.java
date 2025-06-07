@@ -1,6 +1,6 @@
 package org.qateams.tests.admintests;
 
-import org.qateams.components.admin.AdminData;
+import org.qateams.admin.AdminData;
 import org.qateams.pages.HomePage;
 import org.qateams.tests.BaseTest;
 import org.testng.Assert;

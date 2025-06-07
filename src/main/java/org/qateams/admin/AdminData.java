@@ -1,11 +1,10 @@
-package org.qateams.components.admin;
+package org.qateams.admin;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.qateams.driver.DriverManager;
-import org.qateams.utils.ReactWaits;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
