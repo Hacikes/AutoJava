@@ -244,8 +244,7 @@ public class ApplicationManagement {
     // Проверка доступности кнопки для нажатия
     public WebElement checkedPaginationButtonFocus(boolean isNextButton) {
         WebElement paginationButton = getPaginationButton(isNextButton);
-        WebElement button = paginationButton.findElement(By.xpath(".//button"));
-        return button;
+        return paginationButton.findElement(By.xpath(".//button"));
     }
 
 

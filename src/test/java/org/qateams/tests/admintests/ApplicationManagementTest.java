@@ -1,20 +1,23 @@
 package org.qateams.tests.admintests;
 
 import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 import org.qateams.components.admin.ApplicationManagement;
 import org.qateams.constansts.ApplicationStatus;
-import org.qateams.driver.DriverManager;
+import org.qateams.constansts.ApplicationType;
 import org.qateams.tests.BaseTest;
 import org.qateams.utils.TestUtils;
-import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.testng.asserts.SoftAssert;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -53,6 +56,188 @@ public class ApplicationManagementTest extends BaseTest {
         );
 //        softAssert.assertAll("Ошибка получения таблицы заявок");
     }
+
+    // Тест на типы данных в таблице
+    @Test
+    public void testColumnDataTypes() {
+        List<List<String>> table = am.getTableData();
+
+        // Проверка первого столбца (ID) - целое число
+        boolean validFirstColumn = table.stream()
+                .allMatch(row -> isInteger(row.get(0)));
+        softAssert.assertTrue(validFirstColumn, "Первый столбец должен содержать только целые числа");
+
+        // Проверка второго столбца (ID) - целое число
+        boolean validSecondColumn = table.stream()
+                .allMatch(row -> isInteger(row.get(1)));
+        softAssert.assertTrue(validSecondColumn, "Второй столбец должен содержать только целые числа");
+
+        // Проверка третьего столбца (тип заявки) - строка
+        boolean validThirdColumn = table.stream()
+                .allMatch(row -> isValidApplicationType(row.get(2)));
+        softAssert.assertTrue(validThirdColumn, "Третий столбец должен содержать корректные типы заявок");
+
+        // Проверка даты в четвертом столбце на соответствие формату DD.MM.YYYY HH:MM:SS
+        table.forEach(row -> {
+                    softAssert.assertTrue(
+                            isValidCustomDateFormat(row.get(3)),
+                            "Значение " + row.get(3) + " не соответствует формату DD.MM.YYYY HH:MM:SS"
+                    );
+                });
+
+        // Проверка пятого столбца (статус) - допустимые статусы
+        boolean validStatusColumn = table.stream()
+                .allMatch(row -> isValidStatus(row.get(4)));
+        softAssert.assertTrue(validStatusColumn, "Пятый столбец должен содержать корректные статусы");
+    }
+
+    // Вспомогательные методы для проверки
+    private boolean isInteger(String value) {
+        try {
+            Integer.parseInt(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private boolean isValidApplicationType(String value) {
+        List<String> validTypes = ApplicationType.getAllType();
+        return validTypes.contains(value);
+    }
+
+    private boolean isValidDateTime(String value) {
+        try {
+            Instant.parse(value);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+
+    private boolean isValidCustomDateFormat(String value) {
+        try {
+            // Создаем форматтер для формата dd.MM.yyyy HH:mm:ss
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+
+            // Пытаемся распарсить дату
+            LocalDateTime.parse(value, formatter);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+
+    private boolean isValidStatus(String value) {
+        List<String> validStatuses = ApplicationStatus.getAllStatus();
+        return validStatuses.contains(value);
+    }
+
+    // Проверка сортировки строк по дате
+    @Test
+    public void testDateSortingFromCurrentToEarliest() {
+        // Получаем данные таблицы
+        List<List<String>> actualData = am.getTableData();
+
+        // Форматтер для парсинга даты
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+
+        // Список для хранения Unix-timestamp
+        List<Long> unixTimestamps = new ArrayList<>();
+
+        // Парсим даты в Unix-timestamp
+        for (List<String> row : actualData) {
+            try {
+                // Парсим дату из строки
+                LocalDateTime dateTime = LocalDateTime.parse(row.get(3), formatter);
+
+                // Конвертируем в Unix-timestamp (секунды)
+                long unixTimestamp = dateTime.toEpochSecond(ZoneOffset.UTC);
+                unixTimestamps.add(unixTimestamp);
+            } catch (DateTimeParseException e) {
+                softAssert.fail("Ошибка парсинга даты(дата отсутствует или в неверном формате): " + row.get(3));
+            }
+        }
+
+        // Проверяем, что список не пустой
+        softAssert.assertFalse(unixTimestamps.isEmpty(), "Список дат не должен быть пустым");
+
+        // Проверяем сортировку от текущей даты до самой ранней
+        boolean isSortedDescending = isDescendingSorted(unixTimestamps);
+
+        softAssert.assertTrue(
+                isSortedDescending,
+                "Даты должны быть отсортированы от текущей до самой ранней"
+        );
+    }
+
+    // Метод для проверки убывающей сортировки
+    private boolean isDescendingSorted(List<Long> timestamps) {
+        if (timestamps == null || timestamps.size() <= 1) {
+            return true;
+        }
+
+        for (int i = 0; i < timestamps.size() - 1; i++) {
+            // Каждый следующий timestamp должен быть меньше или равен предыдущему
+            if (timestamps.get(i) < timestamps.get(i + 1)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Проверка цвета текста статуса заявки
+    @Test
+    public void testApplicationStatusAndColors() {
+        List<List<String>> actualData = am.getTableData();
+
+        actualData.forEach(row -> {
+            String statusText = row.get(4); // Предполагаем, что статус в 5-м столбце
+
+            // Проверка, что статус существует в enum
+            softAssert.assertTrue(
+                    ApplicationStatus.getAllStatus().contains(statusText),
+                    "Статус '" + statusText + "' не является допустимым"
+            );
+
+            // Проверка цвета для каждого статуса
+            Optional<String> statusColor = ApplicationStatus.getColorByRussianName(statusText);
+
+            softAssert.assertTrue(
+                    statusColor.isPresent(),
+                    "Не найден цвет для статуса: " + statusText
+            );
+
+            // Дополнительная проверка конкретных цветов
+            if (statusColor.isPresent()) {
+                switch (statusText) {
+                    case "На рассмотрении":
+                        softAssert.assertEquals(
+                                statusColor.get(),
+                                "#1b7eaf",
+                                "Неверный цвет для статуса 'На рассмотрении'"
+                        );
+                        break;
+                    case "Одобрена":
+                        softAssert.assertEquals(
+                                statusColor.get(),
+                                "#088e08",
+                                "Неверный цвет для статуса 'Одобрена'"
+                        );
+                        break;
+                    case "Отклонена":
+                        softAssert.assertEquals(
+                                statusColor.get(),
+                                "#c33117f2",
+                                "Неверный цвет для статуса 'Отклонена'"
+                        );
+                        break;
+                }
+            }
+        });
+    }
+
 
 
     // Одобрение и отклонение заявки
@@ -126,7 +311,7 @@ public class ApplicationManagementTest extends BaseTest {
     }
 
 
-    // Проверка отображения и активности кнопок закрытия и обнволения
+    // Проверка отображения и активности кнопок закрытия и обновления
     @Test
     public void testButtonsVisibilityAndEnabled() {
 //        SoftAssert softAssert = new SoftAssert();
@@ -211,10 +396,9 @@ public class ApplicationManagementTest extends BaseTest {
 
     }
 
-
     private List<String> extractApplicationNumbers(List<List<String>> tableData) {
         return tableData.stream()
-                .map(row -> row.get(0))
+                .map(List::getFirst)
                 .collect(Collectors.toList());
     }
 
