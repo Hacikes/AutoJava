@@ -1,7 +1,7 @@
 package org.qateams.tests;
 
 import org.openqa.selenium.By;
-import org.qateams.driver.DriverManager;
+import org.qateams.core.driver.DriverManager;
 import org.testng.annotations.Test;
 
 

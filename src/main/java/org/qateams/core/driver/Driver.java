@@ -1,4 +1,4 @@
-package org.qateams.driver;
+package org.qateams.core.driver;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;

@@ -2,7 +2,7 @@ package org.qateams.pages;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.Select;
-import org.qateams.driver.DriverManager;
+import org.qateams.core.driver.DriverManager;
 
 public class HomePage {
 

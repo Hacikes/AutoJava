@@ -1,4 +1,4 @@
-package org.qateams.utils;
+package org.qateams.config;
 
 import org.qateams.constansts.FrameworkConstants;
 
@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
 
-public class ReadProperties {
+public class PropertyReader {
 
     protected static FileInputStream fileInputStream;
     protected static Properties PROPERTIES;

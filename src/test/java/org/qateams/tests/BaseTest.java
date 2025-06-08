@@ -1,7 +1,6 @@
 package org.qateams.tests;
 
-import org.qateams.driver.Driver;
-import org.qateams.driver.DriverManager;
+import org.qateams.core.driver.Driver;
 import org.qateams.utils.SoftAssertListener;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
