@@ -1,10 +1,10 @@
-package org.qateams.tests.admintests;
+package org.qateams.tests.admin;
 
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.qateams.admin.applicationmanagment.ApplicationManagement;
 import org.qateams.constansts.ApplicationStatus;
-import org.qateams.tests.BaseTest;
+import org.qateams.base.BaseTest;
 import org.qateams.utils.ApplicationStatusService;
 import org.qateams.utils.DataValidationUtils;
 import org.qateams.utils.DateProcessingService;

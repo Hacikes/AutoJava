@@ -1,7 +1,7 @@
 package org.qateams.utils;
 
 import org.qateams.admin.AdminData;
-import org.qateams.pages.HomePage;
+import org.qateams.pages.BasePage;
 
 
 public class TestUtils {
@@ -10,7 +10,7 @@ public class TestUtils {
     }
 
     public static AdminData prepareAdminData() {
-        HomePage hp = new HomePage();
+        BasePage hp = new BasePage();
         hp.clickEnterAsAdmin();
 
         AdminData ad = new AdminData();

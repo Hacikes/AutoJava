@@ -4,7 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.Select;
 import org.qateams.core.driver.DriverManager;
 
-public class HomePage {
+public class BasePage {
 
     /*
     * Порядок выбора локаторов:
@@ -27,14 +27,14 @@ public class HomePage {
         languageDropdown.selectByValue(languageValue);
     }
 
-    public HomePage checkEnterAsUser() {
+    public BasePage checkEnterAsUser() {
         DriverManager.getDriver().findElement(buttonEnterAsUser);
-        return new HomePage();
+        return new BasePage();
     }
 
-    public HomePage checkEnterAsAdmin() {
+    public BasePage checkEnterAsAdmin() {
         DriverManager.getDriver().findElement(buttonEnterAsAdmin);
-        return new HomePage();
+        return new BasePage();
     }
 
     // В доке и в задании такой нет, мб надо будет выпилить

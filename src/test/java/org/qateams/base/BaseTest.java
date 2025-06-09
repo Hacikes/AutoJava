@@ -1,4 +1,4 @@
-package org.qateams.tests;
+package org.qateams.base;
 
 import org.qateams.core.driver.Driver;
 import org.qateams.utils.SoftAssertListener;
