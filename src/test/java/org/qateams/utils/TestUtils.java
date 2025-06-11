@@ -1,7 +1,7 @@
 package org.qateams.utils;
 
-import org.qateams.admin.AdminData;
 import org.qateams.pages.BasePage;
+import org.qateams.pages.components.admin.AdminLoginComponent;
 
 
 public class TestUtils {
@@ -9,11 +9,11 @@ public class TestUtils {
     public TestUtils() {
     }
 
-    public static AdminData prepareAdminData() {
+    public static AdminLoginComponent prepareAdminData() {
         BasePage hp = new BasePage();
         hp.clickEnterAsAdmin();
 
-        AdminData ad = new AdminData();
+        AdminLoginComponent ad = new AdminLoginComponent();
         ad.fillForm(
                 "Иванов",
                 "Иван",

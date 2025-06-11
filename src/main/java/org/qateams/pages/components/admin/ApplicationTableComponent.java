@@ -1,10 +1,10 @@
 package org.qateams.pages.components.admin;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.qateams.core.driver.DriverManager;
 
 import java.time.Duration;
 import java.util.List;
@@ -12,33 +12,47 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ApplicationTableComponent {
-    private final WebDriver driver;
-    private final WebDriverWait wait;
+    // Методы работы с таблицей
+
+    // Базовый метод построения XPath
+    private By buildXpath(By baseElement, String relativeXpath) {
+        return By.xpath("(" + baseElement.toString().replace("By.xpath: ", "") + ")" + relativeXpath);
+    }
 
     // Базовый локатор (общий предок)
     private final By tableContainer = By.xpath("//div[contains(@class, 'MuiPaper-root')]");
+    private final By applicantTable = buildXpath(tableContainer, "//div/table");
+    private final By tableRow = buildXpath(applicantTable, "/tr");
+    private final By applicantEmptyTable = buildXpath(tableContainer, "//div/text");
 
-    // Локаторы таблицы и строк
-    private final By applicantTable = By.xpath(".//div/table");
-    private final By tableRow = By.xpath(".//tr");
-    private final By emptyTableText = By.xpath(".//div/text");
+    private WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(10));
 
-    // Локаторы кнопок
-    private final By buttonClose = By.xpath(".//div[2]/button[1]");
-    private final By buttonRefresh = By.xpath(".//div[2]/button[2]");
-    private final By buttonPaginationBack = By.xpath(".//div[2]//li[1]");
-    private final By buttonPaginationNext = By.xpath(".//div[2]//li[last()]");
-
-    public ApplicationTableComponent(WebDriver driver) {
-        this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    public WebDriverWait getWait() {
+        return wait;
     }
 
-    // Получение всех данных таблицы
+    // Метод получения всей таблицы
     public List<List<String>> getTableData() {
-        waitForTableLoaded();
 
-        return driver.findElements(tableRow).stream()
+        // Ожидание присутствия таблицы
+        wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(tableRow));
+
+        // Ожидание видимости всех строк
+        wait.until(driver -> {
+            List<WebElement> rows = driver.findElements(tableRow);
+            return !rows.isEmpty() && rows.stream().allMatch(WebElement::isDisplayed);
+        });
+
+        // Дополнительная проверка на полную загрузку данных
+        wait.until(driver -> {
+            List<WebElement> rows = driver.findElements(tableRow);
+            return rows.stream()
+                    .noneMatch(row -> row.findElements(By.tagName("td")).isEmpty());
+        });
+
+        return DriverManager.getDriver()
+                .findElements(tableRow)
+                .stream()
                 .map(row -> row.findElements(By.tagName("td"))
                         .stream()
                         .map(cell -> cell.getText().trim())
@@ -47,27 +61,35 @@ public class ApplicationTableComponent {
                 .collect(Collectors.toList());
     }
 
-    // Ожидание полной загрузки таблицы
-    private void waitForTableLoaded() {
-        wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(tableRow));
-        wait.until(driver -> {
-            List<WebElement> rows = driver.findElements(tableRow);
-            return !rows.isEmpty() &&
-                    rows.stream().allMatch(WebElement::isDisplayed) &&
-                    rows.stream().noneMatch(row -> row.findElements(By.tagName("td")).isEmpty());
-        });
+    public WebElement getEmptyTableText() {
+        return DriverManager.getDriver().findElement(applicantEmptyTable);
     }
 
-    // Получение статуса заявки по индексу строки
+    // Методы для получения локаторов ячеек строки
+    public By getRowNumber(int rowIndex) {
+        return buildXpath(tableRow, "[" + rowIndex + "]/td[1]");
+    }
+
+    public int getApplicationNumber(int rowIndex) {
+        By applicationNumber = getRowNumber(rowIndex);
+        WebElement numberElement = DriverManager.getDriver().findElement(applicationNumber);
+        String tempString = numberElement.getText().trim();
+        return Integer.parseInt(tempString);
+    }
+
+    public By getRowStatus(int rowIndex) {
+        return buildXpath(tableRow, "[" + rowIndex + "]/td[5]");
+    }
+
     public String getStatusText(int rowIndex) {
-        By statusLocator = By.xpath(".//tr[" + rowIndex + "]/td[5]");
-        WebElement statusElement = driver.findElement(statusLocator);
+        By statusLocator = getRowStatus(rowIndex);
+        WebElement statusElement = DriverManager.getDriver().findElement(statusLocator);
         return statusElement.getText().trim();
     }
 
     // Поиск строки по номеру заявки
     public int findRowIndexByApplicationNumber(int applicationNumber) {
-        List<WebElement> rows = driver.findElements(tableRow);
+        List<WebElement> rows = DriverManager.getDriver().findElements(tableRow);
         return IntStream.range(0, rows.size())
                 .filter(i -> {
                     WebElement numberCell = rows.get(i).findElement(By.xpath("./td[1]"));
@@ -85,34 +107,5 @@ public class ApplicationTableComponent {
     public String getStatusByApplicationNumber(int applicationNumber) {
         int rowIndex = findRowIndexByApplicationNumber(applicationNumber);
         return getStatusText(rowIndex);
-    }
-
-    // Выполнение действия над заявкой
-    public void performActionOnApplication(int rowIndex, boolean isApprove) {
-        By actionButton = By.xpath(".//tr[" + rowIndex + "]/td[6]//button[" + (isApprove ? 1 : 2) + "]");
-        WebElement button = wait.until(ExpectedConditions.elementToBeClickable(actionButton));
-        button.click();
-    }
-
-    // Закрытие модального окна
-    public void clickCloseButton() {
-        WebElement closeButton = wait.until(ExpectedConditions.elementToBeClickable(buttonClose));
-        closeButton.click();
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(tableContainer));
-    }
-
-    // Обновление таблицы
-    public void clickRefreshButton() {
-        WebElement refreshButton = wait.until(ExpectedConditions.elementToBeClickable(buttonRefresh));
-        refreshButton.click();
-        waitForTableLoaded();
-    }
-
-    // Навигация по пагинации
-    public void clickPaginationButton(boolean isNextButton) {
-        By paginationButton = isNextButton ? buttonPaginationNext : buttonPaginationBack;
-        WebElement button = wait.until(ExpectedConditions.elementToBeClickable(paginationButton));
-        button.click();
-        waitForTableLoaded();
     }
 }
