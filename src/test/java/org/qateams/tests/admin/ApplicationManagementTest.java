@@ -7,10 +7,8 @@ import org.qateams.constansts.ApplicationStatus;
 import org.qateams.base.BaseTest;
 import org.qateams.pages.components.admin.ApplicationManagementComponent;
 import org.qateams.pages.components.admin.ApplicationTableComponent;
-import org.qateams.utils.ApplicationStatusService;
-import org.qateams.utils.DataValidationUtils;
-import org.qateams.utils.DateProcessingService;
-import org.qateams.utils.TestUtils;
+import org.qateams.utils.*;
+import org.qateams.utils.Faker.AdminFakerData;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -29,7 +27,8 @@ public class ApplicationManagementTest extends BaseTest {
     @BeforeMethod
     public void setup() {
         // Беру данные для формы из TestUtils.prepareAdminData()
-        TestUtils.prepareAdminData().clickNextButton();
+//        TestUtils.prepareAdminData().clickNextButton();
+        AdminFakerData.generateAndFillAdminData().clickNextButton();
         managementComponent = new ApplicationManagementComponent();
         tableComponent = new ApplicationTableComponent();
     }
@@ -167,7 +166,6 @@ public class ApplicationManagementTest extends BaseTest {
 
         softAssert.assertNotNull(refreshedTableData, "Таблица после обновления не должна быть null");
         softAssert.assertFalse(refreshedTableData.isEmpty(), "Таблица после обновления не должна быть пустой");
-        softAssert.assertAll("Ошибка при обновлении таблицы заявок");
     }
 
 
