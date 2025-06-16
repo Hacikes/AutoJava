@@ -32,6 +32,8 @@ public class AdminLoginComponent {
 //        return titleElement.isDisplayed() && titleElement.getText().equals("Вы вошли как администратор");
 //    }
 
+
+
     // Заполнение формы
     public void fillForm(String surname, String firstName, String secondName, String phone, String passportNumber, String birthDate) {
         DriverManager.getDriver().findElement(textSurname).sendKeys(surname);
@@ -40,6 +42,11 @@ public class AdminLoginComponent {
         DriverManager.getDriver().findElement(textPhone).sendKeys(phone);
         DriverManager.getDriver().findElement(textNumberOfPassport).sendKeys(passportNumber);
         DriverManager.getDriver().findElement(dateOfBirth).sendKeys(birthDate);
+    }
+
+    public String getEnteredText(By fieldLocator) {
+
+        return DriverManager.getDriver().findElement(textSurname).getDomAttribute("value");
     }
 
     // Нажатие на кнопку "Далее"

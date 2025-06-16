@@ -16,8 +16,10 @@ public class ApplicationTableComponent {
 
     // Базовый метод построения XPath
     private By buildXpath(By baseElement, String relativeXpath) {
-        return By.xpath("(" + baseElement.toString().replace("By.xpath: ", "") + ")" + relativeXpath);
+        String baseXpath = baseElement.toString().replace("By.xpath: ", "");
+        return By.xpath(baseXpath + relativeXpath);
     }
+
 
     // Базовый локатор (общий предок)
     private final By tableContainer = By.xpath("//div[contains(@class, 'MuiPaper-root')]");

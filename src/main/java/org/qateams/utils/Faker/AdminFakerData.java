@@ -14,42 +14,75 @@ public class AdminFakerData {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminFakerData.class);
 
-
     private static final Faker faker = new Faker(new Locale("ru"));
 
-    public static AdminLoginComponent generateAndFillAdminData() {
-        BasePage hp = new BasePage();
-        hp.clickEnterAsAdmin();
+
+    public static AdminLoginComponent generateAndFillAdminData(int... fieldsToGenerate) {
+//        BasePage hp = new BasePage();
+//        hp.clickEnterAsAdmin();
 
         AdminLoginComponent ad = new AdminLoginComponent();
-        String lastName = generateLastName();
-        String firstName = generateFirstName();
-        String middleName = generateMiddleName();
-        String phoneNumber = generatePhoneNumber();
-        String passportNumber = generatePassportNumber();
-        String birthDate = generateBirthDate();
 
+        // Массив всех возможных значений
+        String[] generatedFields = new String[6];
+        generatedFields[0] = generateLastName();
+        generatedFields[1] = generateFirstName();
+        generatedFields[2] = generateMiddleName();
+        generatedFields[3] = generatePhoneNumber();
+        generatedFields[4] = generatePassportNumber();
+        generatedFields[5] = generateBirthDate();
+
+        // Если не переданы поля, генерируем все
+        if (fieldsToGenerate.length == 0) {
+            ad.fillForm(generatedFields[0], generatedFields[1], generatedFields[2],
+                    generatedFields[3], generatedFields[4], generatedFields[5]);
+            logGeneratedData(generatedFields);
+            return ad;
+        }
+
+        // Подготовка массива для передачи в fillForm
+        String[] filledFields = new String[6];
+        for (int index : fieldsToGenerate) {
+            // Проверка на корректность индекса
+            if (index < 0 || index >= 6) {
+                throw new IllegalArgumentException("Некорректный индекс поля: " + index);
+            }
+            filledFields[index] = generatedFields[index];
+        }
+
+        // Вызов fillForm с выбранными полями
         ad.fillForm(
-                lastName,
-                firstName,
-                middleName,
-                phoneNumber,
-                passportNumber,
-                birthDate
+                filledFields[0] != null ? filledFields[0] : "",
+                filledFields[1] != null ? filledFields[1] : "",
+                filledFields[2] != null ? filledFields[2] : "",
+                filledFields[3] != null ? filledFields[3] : "",
+                filledFields[4] != null ? filledFields[4] : "",
+                filledFields[5] != null ? filledFields[5] : ""
         );
 
-        logger.info("Сгенерированы данные для входа:\n" +
-                        "Фамилия: {}\n" +
-                        "Имя: {}\n" +
-                        "Отчество: {}\n" +
-                        "Телефон: {}\n" +
-                        "Номер паспорта: {}\n" +
-                        "Дата рождения: {}",
-                lastName, firstName, middleName,
-                phoneNumber, passportNumber, birthDate);
-
+        logGeneratedData(filledFields);
         return ad;
     }
+
+    // Вспомогательный метод для логирования
+    private static void logGeneratedData(String[] fields) {
+        String[] fieldNames = {
+                "Фамилия", "Имя", "Отчество",
+                "Телефон", "Номер паспорта", "Дата рождения"
+        };
+
+        StringBuilder logMessage = new StringBuilder("Сгенерированы данные для админа:\n");
+        for (int i = 0; i < fields.length; i++) {
+            if (fields[i] != null) {
+                logMessage.append(fieldNames[i]).append(": ").append(fields[i]).append("\n");
+            }
+        }
+
+        logger.info(logMessage.toString());
+    }
+
+
+
 
     public static String generateLastName() {
         return faker.name().lastName();

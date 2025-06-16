@@ -3,8 +3,11 @@ package org.qateams.tests.admin;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.qateams.constansts.ApplicationStatus;
 import org.qateams.base.BaseTest;
+import org.qateams.core.driver.DriverManager;
+import org.qateams.pages.BasePage;
 import org.qateams.pages.components.admin.ApplicationManagementComponent;
 import org.qateams.pages.components.admin.ApplicationTableComponent;
 import org.qateams.utils.*;
@@ -12,6 +15,7 @@ import org.qateams.utils.Faker.AdminFakerData;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -28,6 +32,8 @@ public class ApplicationManagementTest extends BaseTest {
     public void setup() {
         // Беру данные для формы из TestUtils.prepareAdminData()
 //        TestUtils.prepareAdminData().clickNextButton();
+        BasePage hp = new BasePage();
+        hp.clickEnterAsAdmin();
         AdminFakerData.generateAndFillAdminData().clickNextButton();
         managementComponent = new ApplicationManagementComponent();
         tableComponent = new ApplicationTableComponent();
@@ -116,7 +122,7 @@ public class ApplicationManagementTest extends BaseTest {
     }
 
 
-    // Одобрение и отклонение заявки
+    // Одобрение заявки
     @Test
     public void testApplicantApprove() {
         performApplicationAction(true);
@@ -135,14 +141,28 @@ public class ApplicationManagementTest extends BaseTest {
         List<List<String>> table = tableComponent.getTableData();
         int randomRowIndex = new Random().nextInt(table.size());
 
-        int changedApplicationNumber = tableComponent.getApplicationNumber(randomRowIndex);
+        if (randomRowIndex == 0) {
+            randomRowIndex = 1;
+        }
+
+        int changingApplicationNumber = tableComponent.getApplicationNumber(randomRowIndex);
+
         managementComponent.performActionOnApplication(randomRowIndex, isApprove);
+
+        // Явное ожидание обновления статуса
+        WebDriverWait wait = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(10));
+        wait.until(driver -> {
+            String status = managementComponent.getStatusByApplicationNumber(changingApplicationNumber);
+            return status.equals(isApprove
+                    ? ApplicationStatus.APPROVED.getRussianName()
+                    : ApplicationStatus.REJECTED.getRussianName());
+        });
 
         String expectedStatus = isApprove
                 ? ApplicationStatus.APPROVED.getRussianName()
                 : ApplicationStatus.REJECTED.getRussianName();
 
-        String actualStatus = managementComponent.getStatusByApplicationNumber(changedApplicationNumber);
+        String actualStatus = managementComponent.getStatusByApplicationNumber(changingApplicationNumber);
         softAssert.assertEquals(actualStatus, expectedStatus);
     }
 
