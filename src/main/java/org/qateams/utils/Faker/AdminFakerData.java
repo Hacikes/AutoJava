@@ -6,7 +6,10 @@ import org.qateams.pages.components.admin.AdminLoginComponent;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,8 +85,6 @@ public class AdminFakerData {
     }
 
 
-
-
     public static String generateLastName() {
         return faker.name().lastName();
     }
@@ -93,8 +94,17 @@ public class AdminFakerData {
     }
 
     public static String generateMiddleName() {
-        String firstName = faker.name().firstName();
-        return generatePatronymic(firstName);
+        // Массив суффиксов для разнообразия
+        String[] suffixes = {"son", "ovich", "vich", "sky", "ich"};
+
+        // Генерация случайного латинского имени
+        Faker latinFaker = new Faker(Locale.ENGLISH);
+        String baseName = latinFaker.name().firstName();
+
+        // Выбор случайного суффикса
+        String suffix = suffixes[faker.number().numberBetween(0, suffixes.length)];
+
+        return baseName + suffix;
     }
 
     public static String generatePhoneNumber() {
@@ -109,24 +119,9 @@ public class AdminFakerData {
     public static String generateBirthDate() {
         // Генерация даты рождения (совершеннолетний)
         LocalDate birthDate = LocalDate.now()
-                .minusYears(faker.number().numberBetween(18, 65))
+                .minusYears(faker.number().numberBetween(18, 150))
                 .minusDays(faker.number().numberBetween(1, 365));
 
         return birthDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
     }
-
-    // Метод для генерации отчества на основе имени
-    private static String generatePatronymic(String firstName) {
-        String[] patronymicSuffixes = {"ович", "евич", "ич", "овна", "евна"};
-        String suffix = patronymicSuffixes[faker.number().numberBetween(0, patronymicSuffixes.length)];
-
-        // Усечение или модификация основы имени
-        String patronymicBase = firstName.length() > 3
-                ? firstName.substring(0, firstName.length() - 1)
-                : firstName;
-
-        return patronymicBase + suffix;
-    }
-
-
 }
