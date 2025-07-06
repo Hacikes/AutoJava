@@ -13,12 +13,7 @@ import java.util.Objects;
 
         // Используем Builder Pattern для более гибкого создания объектов с необязательными полями
         private ApplicantData(Builder builder) {
-            // Валидация обязательных полей
-            if (builder.passportNumber == null || builder.passportNumber.trim().isEmpty()) {
-                throw new IllegalArgumentException("Номер паспорта обязателен.");
-            }
-            // Можно добавить более строгие проверки формата здесь или на уровне методов set в Page Object,
-            // но для VO основная идея - это целостность объекта.
+
 
             this.lastName = builder.lastName;
             this.firstName = builder.firstName;

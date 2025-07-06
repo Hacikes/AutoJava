@@ -6,7 +6,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.asserts.SoftAssert;
-// Аннотация где переопределён метод, чтобы тесты не падали
+// Аннотация, где переопределён метод, чтобы тесты не падали
 @Listeners(SoftAssertListener.class)
 public class BaseTest {
 

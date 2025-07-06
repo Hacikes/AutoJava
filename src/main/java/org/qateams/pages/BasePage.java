@@ -52,7 +52,10 @@ public class BasePage {
 
     public void clickEnterAsAdmin() {
         DriverManager.getDriver().findElement(buttonEnterAsAdmin).click();
-//        return new HomePage();
+    }
+
+    public void clickEnterAsUser() {
+        DriverManager.getDriver().findElement(buttonEnterAsUser).click();
     }
 
 
