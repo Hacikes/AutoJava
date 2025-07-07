@@ -8,9 +8,13 @@ import org.qateams.pages.components.common.StepIndicatorComponent;
 import org.qateams.pages.components.user.UserRegistrationPage; // Предполагается, что UserRegistrationPage находится в этом пакете
 import org.qateams.pages.components.user.valueobject.ApplicantData;
 import org.qateams.pages.components.user.ServiceSelectionPage; // Предполагаем, что вам нужна эта страница для начальной навигации
+import org.qateams.utils.Faker.ApplicantFakerData;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class UserRegistrationFlowTest extends BaseTest {
@@ -20,7 +24,8 @@ public class UserRegistrationFlowTest extends BaseTest {
     private StepIndicatorComponent stepIndicatorComponent;
 
     // Вспомогательный метод для открытия модального окна и инициализации Page Objects
-    private void setupModalWindow() {
+    @BeforeMethod
+    public void setupUserRegistrationFlowTest() {
         basePage = new BasePage();
         userRegistrationPage = new UserRegistrationPage();
         basePage.clickEnterAsUser();
@@ -35,7 +40,7 @@ public class UserRegistrationFlowTest extends BaseTest {
      */
     @Test(description = "Проверка отображения модального окна 'Данные заявителя' и заголовка")
     public void testUserRegistrationPageTitleAndServiceText() {
-        setupModalWindow();
+        
 
         String expectedTitle = "Вы вошли как Пользоватиль";
         String actualTitle = userRegistrationPage.getPageTitleHint();
@@ -49,7 +54,7 @@ public class UserRegistrationFlowTest extends BaseTest {
      */
     @Test(description = "Проверка начального состояния кнопки 'Далее' (неактивна)")
     public void testNextButtonIsInitiallyDisabled() {
-        setupModalWindow();
+        
 
         softAssert.assertFalse(userRegistrationPage.isNextButtonEnabled(),
                 "Кнопка 'Далее' должна быть неактивна до заполнения обязательного поля.");
@@ -61,20 +66,25 @@ public class UserRegistrationFlowTest extends BaseTest {
      */
     @Test(description = "Проверка валидации обязательного поля 'Номер паспорта'")
     public void testPassportNumberFieldValidation() {
-        setupModalWindow();
+        
 
         // Валидный паспортный номер для создания ApplicantData, чтобы избежать ошибки VO
         String validPassportForVO = "АБ123456";
 
-        // Заполняем все поля, включая обязательное, чтобы ApplicantData создался без ошибки
-        ApplicantData fullData = new ApplicantData.Builder()
-                .lastName("Тестов")
-                .firstName("Тест")
-                .middleName("Тестович")
-                .phone("12345678901")
-                .address("Улица Пушкина, дом Колотушкина")
-                .passportNumber(validPassportForVO) // Передаем валидный номер для создания VO
-                .build();
+        Map<String, String> overridesPassport = new HashMap<>();
+        overridesPassport.put("passportNumber", validPassportForVO);
+
+        ApplicantData fullData = ApplicantFakerData.generateApplicantDataWithOverrides(overridesPassport);
+
+//        // Заполняем все поля, включая обязательное, чтобы ApplicantData создался без ошибки
+//        ApplicantData fullData = new ApplicantData.Builder()
+//                .lastName("Тестов")
+//                .firstName("Тест")
+//                .middleName("Тестович")
+//                .phone("12345678901")
+//                .address("Улица Пушкина, дом Колотушкина")
+//                .passportNumber(validPassportForVO) // Передаем валидный номер для создания VO
+//                .build();
 
         userRegistrationPage.fillApplicantData(fullData); // Заполняем форму на UI
 
@@ -100,7 +110,7 @@ public class UserRegistrationFlowTest extends BaseTest {
      */
     @Test(description = "Успешное заполнение формы и переход на следующий шаг")
     public void testSuccessfulFormSubmission() {
-        setupModalWindow();
+        
 
         // Создаем данные с валидным номером паспорта и другими полями
         ApplicantData validData = new ApplicantData.Builder()
@@ -130,7 +140,7 @@ public class UserRegistrationFlowTest extends BaseTest {
      */
     @Test(description = "Проверка закрытия модального окна кнопкой 'Закрыть'")
     public void testCloseButtonFunctionality() {
-        setupModalWindow();
+        
 
         // Проверяем, что модальное окно видимо до закрытия
         softAssert.assertTrue(userRegistrationPage.getPageTitleHint().contains("Пользоватиль"),
@@ -150,7 +160,7 @@ public class UserRegistrationFlowTest extends BaseTest {
 
     @Test(description = "Проверка ограничений полей на длину и тип символов")
     public void testFieldInputRestrictions() {
-        setupModalWindow();
+        
 
         // Для того чтобы кнопка "Далее" была активной, обязательное поле должно быть заполнено.
         // Заполним его один раз в начале, так как фокус теста на других полях.
@@ -248,18 +258,13 @@ public class UserRegistrationFlowTest extends BaseTest {
         userRegistrationPage.passportNumberField.sendKeys(validCharsPassport);
         softAssert.assertEquals(userRegistrationPage.passportNumberField.getAttribute("value"), validCharsPassport,
                 "Номер паспорта: Должен принимать русские буквы и цифры.");
-
-
         // --- 6. Адрес прописки: не более 50 символов, только буквы и спецсимволы. Цифры не должны приниматься. ---
         // TODO: Реализовать после уточнения требований
-
-
-
     }
 
     @Test(description = "Проверка цветового индикатор этапов")
     public void testStepIndicator() {
-        setupModalWindow();
+        
         // Проверка индикаторов шагов при первом открытии модального окна (Шаг 1 активен)
         softAssert.assertTrue(stepIndicatorComponent.isStepGreen(1), "Индикатор этапов: Шаг 1 'Данные заявителя' должен быть зеленым.");
         softAssert.assertFalse(stepIndicatorComponent.isStepGreen(2), "Индикатор этапов: Шаг 2 'Выбор услуги' не должен быть зеленым.");
@@ -268,7 +273,5 @@ public class UserRegistrationFlowTest extends BaseTest {
         // Добавьте проверки для всех остальных шагов, если их больше
         softAssert.assertTrue(stepIndicatorComponent.isStepGray(4), "Индикатор этапов: Шаг 4 'Данные услуги' должен быть серым.");
         softAssert.assertTrue(stepIndicatorComponent.isStepGray(5), "Индикатор этапов: Шаг 5 'Статус заявки' должен быть серым.");
-
-
     }
 }

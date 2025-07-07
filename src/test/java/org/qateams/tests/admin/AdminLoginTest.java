@@ -119,8 +119,6 @@ public class AdminLoginTest extends BaseTest {
         ad.clearEnteredSurnameText();
         ad.clickOnFreeArea();
         softAssert.assertTrue(ad.isSurnameFieldInvalid(), "Пустое поле должно быть подсвечено красной рамкой");
-
-
     }
 
 
