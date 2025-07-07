@@ -2,7 +2,7 @@ package org.qateams.pages.components.user.valueobject;
 
 import java.util.Objects;
 
-public class CitizenData {
+public final class CitizenData {
 
     private final String lastName;
     private final String firstName;
@@ -10,19 +10,12 @@ public class CitizenData {
     private final String address;
     private final String dateOfBirth; // Формат ДД.ММ.ГГГГ
     private final String passportNumber;
-    private final String gender; // "Мужской", "Женский"
+    private final String gender; // "Мужской" или "Женский"
 
+    // Приватный конструктор для использования с Builder Pattern
     private CitizenData(Builder builder) {
-        // Все поля обязательны, согласно спецификации для шага 3
-        if (builder.lastName == null || builder.lastName.trim().isEmpty() ||
-                builder.firstName == null || builder.firstName.trim().isEmpty() ||
-                builder.middleName == null || builder.middleName.trim().isEmpty() ||
-                builder.address == null || builder.address.trim().isEmpty() || // Для рождения и смерти адрес обязателен
-                builder.dateOfBirth == null || builder.dateOfBirth.trim().isEmpty() ||
-                builder.passportNumber == null || builder.passportNumber.trim().isEmpty() ||
-                builder.gender == null || builder.gender.trim().isEmpty()) {
-            throw new IllegalArgumentException("Все обязательные поля для CitizenData должны быть заполнены.");
-        }
+        // Валидация обязательных полей (для VO мы пока не делаем строгую валидацию,
+        // позволяя создавать объекты с пустыми строками для тестирования UI-валидации)
         this.lastName = builder.lastName;
         this.firstName = builder.firstName;
         this.middleName = builder.middleName;
@@ -41,6 +34,7 @@ public class CitizenData {
     public String getPassportNumber() { return passportNumber; }
     public String getGender() { return gender; }
 
+    // Builder Class
     public static class Builder {
         private String lastName;
         private String firstName;
@@ -80,5 +74,18 @@ public class CitizenData {
     @Override
     public int hashCode() {
         return Objects.hash(lastName, firstName, middleName, address, dateOfBirth, passportNumber, gender);
+    }
+
+    @Override
+    public String toString() {
+        return "CitizenData{" +
+                "lastName='" + lastName + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", middleName='" + middleName + '\'' +
+                ", address='" + address + '\'' +
+                ", dateOfBirth='" + dateOfBirth + '\'' +
+                ", passportNumber='" + passportNumber + '\'' +
+                ", gender='" + gender + '\'' +
+                '}';
     }
 }

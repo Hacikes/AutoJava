@@ -1,67 +1,78 @@
 package org.qateams.pages.components.user;
 
-import org.qateams.core.driver.DriverManager;
-import org.qateams.pages.components.user.valueobject.CitizenData;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Select; // Для работы с выпадающими списками
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.qateams.core.driver.DriverManager;
+import org.qateams.pages.components.user.valueobject.CitizenData;
+import org.qateams.utils.InputValidationComponent;
 
 import java.time.Duration;
+import java.util.Optional;
 
 // Данные гражданина - общая
 public class CitizenDataPage {
     private final WebDriver driver;
     private final WebDriverWait wait;
+    private final InputValidationComponent inputValidationComponent;
 
-    @FindBy(id = "citizenLastName")
-    private WebElement lastNameField;
-    @FindBy(id = "citizenFirstName")
-    private WebElement firstNameField;
-    @FindBy(id = "citizenMiddleName")
-    private WebElement middleNameField;
-    @FindBy(id = "citizenAddress")
-    private WebElement addressField;
-    @FindBy(id = "citizenDateOfBirth")
-    private WebElement dateOfBirthField;
-    @FindBy(id = "citizenPassportNumber")
-    private WebElement passportNumberField;
-    @FindBy(id = "citizenGender")
-    private WebElement genderDropdownElement;
-    private Select genderDropdown;
+    // --- УЛУЧШЕННЫЕ ЛОКАТОРЫ ПОЛЕЙ ВВОДА ---
+    private WebElement getInputFieldByLabel(String labelText) {
+        WebElement label = wait.until(ExpectedConditions.presenceOfElementLocated(
+                By.xpath("//label[contains(text(), '" + labelText + "')]")));
+        String inputId = label.getAttribute("for");
+        return wait.until(ExpectedConditions.presenceOfElementLocated(By.id(inputId)));
+    }
 
-    @FindBy(id = "nextButton")
+    public WebElement lastNameField() { return getInputFieldByLabel("Фамилия"); }
+    public WebElement firstNameField() { return getInputFieldByLabel("Имя"); }
+    public WebElement middleNameField() { return getInputFieldByLabel("Отчество"); }
+    public WebElement dateOfBirthField() { return getInputFieldByLabel("Дата рождения"); }
+    public WebElement passportNumberField() { return getInputFieldByLabel("Номер паспорта"); }
+    public WebElement genderField() { return getInputFieldByLabel("Пол"); }
+    public WebElement addressField() { return getInputFieldByLabel("Адрес прописки"); }
+
+    // --- УЛУЧШЕННЫЕ ЛОКАТОРЫ КНОПОК ---
+    @FindBy(xpath = "//button[.//svg[@data-icon='arrow-right']]")
     private WebElement nextButton;
-    @FindBy(id = "backButton")
+    @FindBy(xpath = "//button[.//svg[@data-icon='arrow-left']]")
     private WebElement backButton;
+    @FindBy(xpath = "//div[contains(@class, 'MuiDialogActions-root')]/button[1]")
+    private WebElement closeButton;
 
-    // Конструктор теперь не принимает WebDriver
+
     public CitizenDataPage() {
-        this.driver = DriverManager.getDriver(); // Получаем драйвер
+        this.driver = DriverManager.getDriver();
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         PageFactory.initElements(driver, this);
-        genderDropdown = new Select(genderDropdownElement);
+        this.inputValidationComponent = new InputValidationComponent();
     }
 
-    /**
-     * Заполняет форму данных гражданина, используя Value Object.
-     * @param data Объект CitizenData, содержащий данные гражданина.
-     */
     public void fillCitizenData(CitizenData data) {
-        wait.until(ExpectedConditions.visibilityOf(lastNameField));
+        wait.until(ExpectedConditions.visibilityOf(lastNameField()));
 
-        lastNameField.sendKeys(data.getLastName());
-        firstNameField.sendKeys(data.getFirstName());
-        middleNameField.sendKeys(data.getMiddleName());
-        addressField.sendKeys(data.getAddress());
-        dateOfBirthField.sendKeys(data.getDateOfBirth());
-        passportNumberField.sendKeys(data.getPassportNumber());
-        genderDropdown.selectByVisibleText(data.getGender());
+        Optional.ofNullable(data.getLastName()).ifPresent(val -> { lastNameField().clear(); lastNameField().sendKeys(val); });
+        Optional.ofNullable(data.getFirstName()).ifPresent(val -> { firstNameField().clear(); firstNameField().sendKeys(val); });
+        Optional.ofNullable(data.getMiddleName()).ifPresent(val -> { middleNameField().clear(); middleNameField().sendKeys(val); });
+        Optional.ofNullable(data.getAddress()).ifPresent(val -> { addressField().clear(); addressField().sendKeys(val); });
+        Optional.ofNullable(data.getDateOfBirth()).ifPresent(val -> { dateOfBirthField().clear(); dateOfBirthField().sendKeys(val); });
+        Optional.ofNullable(data.getPassportNumber()).ifPresent(val -> { passportNumberField().clear(); passportNumberField().sendKeys(val); });
+        Optional.ofNullable(data.getGender()).ifPresent(val -> { genderField().clear(); genderField().sendKeys(val); });
     }
+
+    public void clearLastNameField() { lastNameField().clear(); }
+    public void clearFirstNameField() { firstNameField().clear(); }
+    public void clearMiddleNameField() { middleNameField().clear(); }
+    public void clearAddressField() { addressField().clear(); }
+    public void clearDateOfBirthField() { dateOfBirthField().sendKeys(Keys.CONTROL + "a", Keys.DELETE); }
+    public void clearPassportNumberField() { passportNumberField().clear(); }
+    public void clearGenderField() { genderField().clear(); }
+
 
     public void clickNextButton() {
         wait.until(ExpectedConditions.elementToBeClickable(nextButton)).click();
@@ -71,28 +82,39 @@ public class CitizenDataPage {
         wait.until(ExpectedConditions.elementToBeClickable(backButton)).click();
     }
 
+    public void clickCloseButton() {
+        wait.until(ExpectedConditions.elementToBeClickable(closeButton)).click();
+    }
+
     public boolean isNextButtonEnabled() {
-        return nextButton.isEnabled();
+        try {
+            return wait.until(ExpectedConditions.elementToBeClickable(nextButton)).isEnabled();
+        } catch (org.openqa.selenium.TimeoutException | org.openqa.selenium.NoSuchElementException e) {
+            return false;
+        }
+    }
+
+    public boolean isFieldHighlightedRed(String fieldName) {
+        String inputId;
+        switch (fieldName.toLowerCase()) {
+            case "фамилия": inputId = lastNameField().getAttribute("id"); break;
+            case "имя": inputId = firstNameField().getAttribute("id"); break;
+            case "отчество": inputId = middleNameField().getAttribute("id"); break;
+            case "дата рождения": inputId = dateOfBirthField().getAttribute("id"); break;
+            case "номер паспорта": inputId = passportNumberField().getAttribute("id"); break;
+            case "пол": inputId = genderField().getAttribute("id"); break;
+            case "адрес прописки": inputId = addressField().getAttribute("id"); break;
+            default: throw new IllegalArgumentException("Неизвестное поле для проверки подсветки: " + fieldName);
+        }
+        return inputValidationComponent.isFieldHighlightedInRed(By.id(inputId));
     }
 
     /**
-     * Проверяет, подсвечено ли поле красным.
-     * @param fieldName Название поля (Фамилия, Имя, Отчество, Адрес прописки, Дата рождения, Номер паспорта, Пол).
-     * @return true, если поле подсвечено красным, иначе false.
+     * Кликает на свободную область модального окна для активации валидации полей.
+     * ОБНОВЛЕНО: Теперь кликает на основную "бумажную" область модального окна.
      */
-    public boolean isFieldHighlightedRed(String fieldName) {
-        WebElement field;
-        switch (fieldName.toLowerCase()) {
-            case "фамилия": field = lastNameField; break;
-            case "имя": field = firstNameField; break;
-            case "отчество": field = middleNameField; break;
-            case "адрес прописки": field = addressField; break;
-            case "дата рождения": field = dateOfBirthField; break;
-            case "номер паспорта": field = passportNumberField; break;
-            case "пол": field = genderDropdownElement; break;
-            default: throw new IllegalArgumentException("Неизвестное поле для проверки подсветки: " + fieldName);
-        }
-        String borderColor = field.getCssValue("border-color");
-        return borderColor.contains("rgb(255, 0, 0)") || borderColor.contains("#FF0000");
+    public void clickOnFreeArea() {
+        WebElement modalPaper = wait.until(ExpectedConditions.presenceOfElementLocated(By.className("MuiDialog-paper")));
+        modalPaper.click();
     }
 }

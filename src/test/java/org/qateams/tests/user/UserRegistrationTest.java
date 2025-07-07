@@ -7,17 +7,14 @@ import org.qateams.pages.BasePage;
 import org.qateams.pages.components.common.StepIndicatorComponent;
 import org.qateams.pages.components.user.UserRegistrationPage; // Предполагается, что UserRegistrationPage находится в этом пакете
 import org.qateams.pages.components.user.valueobject.ApplicantData;
-import org.qateams.pages.components.user.ServiceSelectionPage; // Предполагаем, что вам нужна эта страница для начальной навигации
 import org.qateams.utils.Faker.ApplicantFakerData;
-import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
-public class UserRegistrationFlowTest extends BaseTest {
+public class UserRegistrationTest extends BaseTest {
 
     private BasePage basePage;
     private UserRegistrationPage userRegistrationPage;
