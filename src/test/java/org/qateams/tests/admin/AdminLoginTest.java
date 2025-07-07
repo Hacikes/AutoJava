@@ -33,7 +33,7 @@ public class AdminLoginTest extends BaseTest {
     @BeforeMethod
     public void setup() {
         // Беру данные для формы из TestUtils.prepareAdminData()
-//        TestUtils.prepareAdminData().clickNextButton();
+        // TestUtils.prepareAdminData().clickNextButton();
         hp.clickEnterAsAdmin();
 
     }
