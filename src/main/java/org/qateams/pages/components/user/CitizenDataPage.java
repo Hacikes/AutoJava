@@ -15,13 +15,13 @@ import org.qateams.utils.InputValidationComponent;
 import java.time.Duration;
 import java.util.Optional;
 
-// Данные гражданина - общая
+// Данные гражданина
 public class CitizenDataPage {
     private final WebDriver driver;
     private final WebDriverWait wait;
     private final InputValidationComponent inputValidationComponent;
 
-    // --- УЛУЧШЕННЫЕ ЛОКАТОРЫ ПОЛЕЙ ВВОДА ---
+    // --- УЛУЧШЕННЫЕ ЛОКАТОРЫ ПОЛЕЙ ВВОДА (как раньше, они стабильны) ---
     private WebElement getInputFieldByLabel(String labelText) {
         WebElement label = wait.until(ExpectedConditions.presenceOfElementLocated(
                 By.xpath("//label[contains(text(), '" + labelText + "')]")));
@@ -32,16 +32,18 @@ public class CitizenDataPage {
     public WebElement lastNameField() { return getInputFieldByLabel("Фамилия"); }
     public WebElement firstNameField() { return getInputFieldByLabel("Имя"); }
     public WebElement middleNameField() { return getInputFieldByLabel("Отчество"); }
+    public WebElement addressField() { return getInputFieldByLabel("Адрес прописки"); }
     public WebElement dateOfBirthField() { return getInputFieldByLabel("Дата рождения"); }
     public WebElement passportNumberField() { return getInputFieldByLabel("Номер паспорта"); }
-    public WebElement genderField() { return getInputFieldByLabel("Пол"); }
-    public WebElement addressField() { return getInputFieldByLabel("Адрес прописки"); }
+    public WebElement genderField() { return getInputFieldByLabel("Пол"); } // ВОЗВРАЩЕНО: поле Пол
 
     // --- УЛУЧШЕННЫЕ ЛОКАТОРЫ КНОПОК ---
-    @FindBy(xpath = "//button[.//svg[@data-icon='arrow-right']]")
+    @FindBy(xpath = "//div[contains(@class, 'MuiDialogActions-root')]/button[last()]")
     private WebElement nextButton;
-    @FindBy(xpath = "//button[.//svg[@data-icon='arrow-left']]")
+
+    @FindBy(xpath = "//div[contains(@class, 'MuiDialogActions-root')]/button[last()-1]")
     private WebElement backButton;
+
     @FindBy(xpath = "//div[contains(@class, 'MuiDialogActions-root')]/button[1]")
     private WebElement closeButton;
 
@@ -53,25 +55,30 @@ public class CitizenDataPage {
         this.inputValidationComponent = new InputValidationComponent();
     }
 
+    /**
+     * Заполняет форму данных гражданина, используя Value Object.
+     * @param data Объект CitizenData.
+     */
     public void fillCitizenData(CitizenData data) {
-        wait.until(ExpectedConditions.visibilityOf(lastNameField()));
+        wait.until(ExpectedConditions.visibilityOf(lastNameField())); // Ждем видимости первого поля
 
         Optional.ofNullable(data.getLastName()).ifPresent(val -> { lastNameField().clear(); lastNameField().sendKeys(val); });
         Optional.ofNullable(data.getFirstName()).ifPresent(val -> { firstNameField().clear(); firstNameField().sendKeys(val); });
         Optional.ofNullable(data.getMiddleName()).ifPresent(val -> { middleNameField().clear(); middleNameField().sendKeys(val); });
         Optional.ofNullable(data.getAddress()).ifPresent(val -> { addressField().clear(); addressField().sendKeys(val); });
-        Optional.ofNullable(data.getDateOfBirth()).ifPresent(val -> { dateOfBirthField().clear(); dateOfBirthField().sendKeys(val); });
+        Optional.ofNullable(data.getDateOfBirth()).ifPresent(val -> { dateOfBirthField().sendKeys(Keys.CONTROL + "a", Keys.DELETE); dateOfBirthField().sendKeys(val); });
         Optional.ofNullable(data.getPassportNumber()).ifPresent(val -> { passportNumberField().clear(); passportNumberField().sendKeys(val); });
-        Optional.ofNullable(data.getGender()).ifPresent(val -> { genderField().clear(); genderField().sendKeys(val); });
+        Optional.ofNullable(data.getGender()).ifPresent(val -> { genderField().clear(); genderField().sendKeys(val); }); // ВОЗВРАЩЕНО: заполнение поля Пол
     }
 
+    // Методы для очистки полей
     public void clearLastNameField() { lastNameField().clear(); }
     public void clearFirstNameField() { firstNameField().clear(); }
     public void clearMiddleNameField() { middleNameField().clear(); }
     public void clearAddressField() { addressField().clear(); }
     public void clearDateOfBirthField() { dateOfBirthField().sendKeys(Keys.CONTROL + "a", Keys.DELETE); }
     public void clearPassportNumberField() { passportNumberField().clear(); }
-    public void clearGenderField() { genderField().clear(); }
+    public void clearGenderField() { genderField().clear(); } // ВОЗВРАЩЕНО: очистка поля Пол
 
 
     public void clickNextButton() {
@@ -86,6 +93,10 @@ public class CitizenDataPage {
         wait.until(ExpectedConditions.elementToBeClickable(closeButton)).click();
     }
 
+    /**
+     * Проверяет, доступна ли кнопка "Далее" для клика.
+     * @return true, если кнопка "Далее" активна, иначе false.
+     */
     public boolean isNextButtonEnabled() {
         try {
             return wait.until(ExpectedConditions.elementToBeClickable(nextButton)).isEnabled();
@@ -94,16 +105,22 @@ public class CitizenDataPage {
         }
     }
 
+    /**
+     * Проверяет, подсвечено ли поле красным, используя InputValidationComponent.
+     *
+     * @param fieldName Название поля (Фамилия, Имя, Отчество, Адрес прописки, Дата рождения, Номер паспорта, Пол).
+     * @return true, если поле подсвечено красным, иначе false.
+     */
     public boolean isFieldHighlightedRed(String fieldName) {
         String inputId;
         switch (fieldName.toLowerCase()) {
             case "фамилия": inputId = lastNameField().getAttribute("id"); break;
             case "имя": inputId = firstNameField().getAttribute("id"); break;
             case "отчество": inputId = middleNameField().getAttribute("id"); break;
+            case "адрес прописки": inputId = addressField().getAttribute("id"); break;
             case "дата рождения": inputId = dateOfBirthField().getAttribute("id"); break;
             case "номер паспорта": inputId = passportNumberField().getAttribute("id"); break;
-            case "пол": inputId = genderField().getAttribute("id"); break;
-            case "адрес прописки": inputId = addressField().getAttribute("id"); break;
+            case "пол": inputId = genderField().getAttribute("id"); break; // ВОЗВРАЩЕНО: проверка поля Пол
             default: throw new IllegalArgumentException("Неизвестное поле для проверки подсветки: " + fieldName);
         }
         return inputValidationComponent.isFieldHighlightedInRed(By.id(inputId));
@@ -111,7 +128,6 @@ public class CitizenDataPage {
 
     /**
      * Кликает на свободную область модального окна для активации валидации полей.
-     * ОБНОВЛЕНО: Теперь кликает на основную "бумажную" область модального окна.
      */
     public void clickOnFreeArea() {
         WebElement modalPaper = wait.until(ExpectedConditions.presenceOfElementLocated(By.className("MuiDialog-paper")));

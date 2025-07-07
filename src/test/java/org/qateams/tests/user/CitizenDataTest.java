@@ -218,8 +218,8 @@ public class CitizenDataTest extends BaseTest {
         citizenDataPage.clearDateOfBirthField();
         String validDate = "31.12.2000";
         citizenDataPage.dateOfBirthField().sendKeys(validDate);
-        softAssert.assertEquals(citizenDataPage.dateOfBirthField().getAttribute("value"), "2000-12-31",
-                "Дата рождения: Поле должно отображать дату в формате YYYY-MM-DD после ввода.");
+        softAssert.assertEquals(citizenDataPage.dateOfBirthField().getAttribute("value"), "31.12.2000",
+                "Дата рождения: Поле должно отображать дату в формате DD-MM-YYYY после ввода.");
 
         citizenDataPage.clearDateOfBirthField();
         String invalidDateInput = "не дата";

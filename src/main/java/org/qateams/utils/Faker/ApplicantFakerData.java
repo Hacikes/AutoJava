@@ -29,7 +29,7 @@ public class ApplicantFakerData {
         ApplicantData data = new ApplicantData.Builder()
                 .lastName(generateLastName())
                 .firstName(generateFirstName())
-                .middleName(generateMiddleName())
+                .middleName(generateMiddleName()) // Теперь generateMiddleName() гарантирует длину >= 6
                 .address(generateAddress())
                 .phone(generatePhoneNumber())
                 .passportNumber(generatePassportNumber())
@@ -51,7 +51,7 @@ public class ApplicantFakerData {
         // Генерируем все поля по умолчанию
         String lastName = generateLastName();
         String firstName = generateFirstName();
-        String middleName = generateMiddleName();
+        String middleName = generateMiddleName(); // Теперь просто вызываем, т.к. generateMiddleName() гарантирует длину
         String address = generateAddress();
         String phone = generatePhoneNumber();
         String passportNumber = generatePassportNumber();
@@ -60,6 +60,8 @@ public class ApplicantFakerData {
         if (overrides != null) {
             lastName = overrides.getOrDefault("lastName", lastName);
             firstName = overrides.getOrDefault("firstName", firstName);
+            // Для отчества, если оно переопределяется, мы не применяем проверку длины здесь.
+            // Предполагается, что override может быть использован для тестирования некорректных данных (например, короткого отчества)
             middleName = overrides.getOrDefault("middleName", middleName);
             address = overrides.getOrDefault("address", address);
             phone = overrides.getOrDefault("phone", phone);
@@ -98,14 +100,18 @@ public class ApplicantFakerData {
 
     /**
      * Генерирует случайное отчество (латиницей, как указано в документации).
-     * Использует английский Faker для генерации латинских символов.
+     * Гарантирует, что отчество будет не менее 6 символов.
      * @return Отчество.
      */
     public static String generateMiddleName() {
         // Согласно документации: "данные из паспорта только латиницей без спецсимволов."
         // Используем английский Faker для генерации латинского имени.
         Faker latinFaker = new Faker(Locale.ENGLISH);
-        return latinFaker.name().firstName();
+        String middleName;
+        do {
+            middleName = latinFaker.name().firstName(); // Генерируем латинское имя
+        } while (middleName.length() < 6); // Исправлено: цикл продолжается, пока длина МЕНЬШЕ 6
+        return middleName; // Исправлено: возвращаем то же имя, которое прошло проверку
     }
 
     /**
