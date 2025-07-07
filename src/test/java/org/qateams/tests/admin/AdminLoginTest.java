@@ -292,8 +292,7 @@ public class AdminLoginTest extends BaseTest {
             ad.fillForm("", "", "", "", "", validDate);
 
             String enteredDate = ad.getEnteredBirthDate();
-            softAssert.assertEquals(enteredDate, validDate,
-                    "Введенная дата должна соответствовать корректному формату");
+            softAssert.assertEquals(enteredDate, validDate, "Введенная дата должна соответствовать корректному формату");
 
 
         // Тест 2: Проверка ограничений ввода даты
@@ -312,8 +311,7 @@ public class AdminLoginTest extends BaseTest {
                 ad.fillForm("", "", "", "", "", invalidDate);
 
                 boolean isDateInvalid = ad.isDateFieldInvalid();
-                softAssert.assertTrue(isDateInvalid,
-                        "Дата '" + invalidDate + "' должна быть невалидной");
+                softAssert.assertTrue(isDateInvalid, "Дата '" + invalidDate + "' должна быть невалидной");
             }
 
 
@@ -331,8 +329,7 @@ public class AdminLoginTest extends BaseTest {
                 ad.fillForm("", "", "", "", "", ageLimitDates[i]);
 
                 boolean isDateValid = !Boolean.parseBoolean(ad.getEnteredBirthDate());
-                softAssert.assertTrue(isDateValid,
-                        "Дата '" + ageLimitDates[i] + "' должна быть валидной");
+                softAssert.assertTrue(isDateValid, "Дата '" + ageLimitDates[i] + "' должна быть валидной");
             }
 
             // Проверка последних двух дат (должны быть невалидными)
@@ -340,8 +337,7 @@ public class AdminLoginTest extends BaseTest {
                 ad.fillForm("", "", "", "", "", ageLimitDates[i]);
 
                 boolean isDateInvalid = ad.isDateFieldInvalid();
-                softAssert.assertTrue(isDateInvalid,
-                        "Дата '" + ageLimitDates[i] + "' должна быть невалидной");
+                softAssert.assertTrue(isDateInvalid, "Дата '" + ageLimitDates[i] + "' должна быть невалидной");
             }
 
         // Тест 4: Интерактивный выбор даты через датапикер
@@ -355,9 +351,6 @@ public class AdminLoginTest extends BaseTest {
 
             // Проверка выбранной даты
             String selectedDate = ad.getEnteredBirthDate();
-            softAssert.assertEquals(selectedDate, "15.01.2000",
-                    "Выбранная дата должна соответствовать ожидаемой");
-
-
+            softAssert.assertEquals(selectedDate, "15.01.2000", "Выбранная дата должна соответствовать ожидаемой");
     }
 }

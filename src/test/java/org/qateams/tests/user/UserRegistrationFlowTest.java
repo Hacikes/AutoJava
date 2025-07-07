@@ -4,6 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.qateams.base.BaseTest;
 import org.qateams.pages.BasePage;
+import org.qateams.pages.components.common.StepIndicatorComponent;
 import org.qateams.pages.components.user.UserRegistrationPage; // Предполагается, что UserRegistrationPage находится в этом пакете
 import org.qateams.pages.components.user.valueobject.ApplicantData;
 import org.qateams.pages.components.user.ServiceSelectionPage; // Предполагаем, что вам нужна эта страница для начальной навигации
@@ -16,6 +17,7 @@ public class UserRegistrationFlowTest extends BaseTest {
 
     private BasePage basePage;
     private UserRegistrationPage userRegistrationPage;
+    private StepIndicatorComponent stepIndicatorComponent;
 
     // Вспомогательный метод для открытия модального окна и инициализации Page Objects
     private void setupModalWindow() {
@@ -24,6 +26,7 @@ public class UserRegistrationFlowTest extends BaseTest {
         basePage.clickEnterAsUser();
         // Дождемся загрузки модального окна, чтобы избежать NoSuchElementException
         userRegistrationPage.getPageTitleHint();
+        stepIndicatorComponent = userRegistrationPage.getStepIndicatorComponent();
     }
 
     /**
@@ -249,5 +252,23 @@ public class UserRegistrationFlowTest extends BaseTest {
 
         // --- 6. Адрес прописки: не более 50 символов, только буквы и спецсимволы. Цифры не должны приниматься. ---
         // TODO: Реализовать после уточнения требований
+
+
+
+    }
+
+    @Test(description = "Проверка цветового индикатор этапов")
+    public void testStepIndicator() {
+        setupModalWindow();
+        // Проверка индикаторов шагов при первом открытии модального окна (Шаг 1 активен)
+        softAssert.assertTrue(stepIndicatorComponent.isStepGreen(1), "Индикатор этапов: Шаг 1 'Данные заявителя' должен быть зеленым.");
+        softAssert.assertFalse(stepIndicatorComponent.isStepGreen(2), "Индикатор этапов: Шаг 2 'Выбор услуги' не должен быть зеленым.");
+        softAssert.assertTrue(stepIndicatorComponent.isStepGray(2), "Индикатор этапов: Шаг 2 'Выбор услуги' должен быть серым.");
+        softAssert.assertTrue(stepIndicatorComponent.isStepGray(3), "Индикатор этапов: Шаг 3 'Данные гражданина' должен быть серым.");
+        // Добавьте проверки для всех остальных шагов, если их больше
+        softAssert.assertTrue(stepIndicatorComponent.isStepGray(4), "Индикатор этапов: Шаг 4 'Данные услуги' должен быть серым.");
+        softAssert.assertTrue(stepIndicatorComponent.isStepGray(5), "Индикатор этапов: Шаг 5 'Статус заявки' должен быть серым.");
+
+
     }
 }

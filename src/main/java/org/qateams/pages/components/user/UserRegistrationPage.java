@@ -2,6 +2,7 @@ package org.qateams.pages.components.user;
 
 import org.openqa.selenium.Keys;
 import org.qateams.core.driver.DriverManager;
+import org.qateams.pages.components.common.StepIndicatorComponent;
 import org.qateams.pages.components.user.valueobject.ApplicantData;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -21,39 +22,36 @@ public class UserRegistrationPage {
     private final WebDriver driver;
     public final WebDriverWait wait;
     private final InputValidationComponent inputValidationComponent;
+    private final StepIndicatorComponent stepIndicatorComponent; // <-- Добавляем экземпляр компонента
 
     // Заголовок модального окна (текст "Вы вошли как Пользоватиль")
-    // Используем XPath, т.к. ID динамический, а текст стабилен.
     @FindBy(xpath = "//h2[contains(@class, 'MuiDialogTitle-root')]/span")
     private WebElement pageTitleHint;
 
     // Текст выбранной услуги
-    // Используем XPath, т.к. класс динамический, а текст стабилен.
     @FindBy(xpath = "//span[contains(text(), 'Вы выбрали услугу:')]")
     private WebElement selectedServiceText;
 
     // Поля ввода данных заявителя
-    // Предпочитаем ID, если они стабильны. Если нет, перейдем на placeholder или комбинации с label.
     @FindBy(id = "TextInputField-1") // Фамилия
-    public WebElement lastNameField; // Сделал public для прямого доступа в тесте для .clear() и .getAttribute()
+    public WebElement lastNameField;
 
     @FindBy(id = "TextInputField-2") // Имя
-    public WebElement firstNameField; // Сделал public
+    public WebElement firstNameField;
 
     @FindBy(id = "TextInputField-3") // Отчество
-    public WebElement middleNameField; // Сделал public
+    public WebElement middleNameField;
 
     @FindBy(id = "TextInputField-4") // Телефон
-    public WebElement phoneField; // Сделал public
+    public WebElement phoneField;
 
     @FindBy(id = "TextInputField-5") // Номер паспорта
-    public WebElement passportNumberField; // Сделал public
+    public WebElement passportNumberField;
 
     @FindBy(id = "TextInputField-6") // Адрес прописки
-    public WebElement addressField; // Сделал public
+    public WebElement addressField;
 
     // Кнопки
-    // Используем XPath по тексту, т.к. кнопки не имеют уникальных ID или стабильных классов для прямого доступа.
     @FindBy(xpath = "//button[contains(., 'Далее') and not(contains(@class, 'Mui-disabled'))]")
     private WebElement nextButton;
 
@@ -61,16 +59,16 @@ public class UserRegistrationPage {
     private WebElement closeButton;
 
     public UserRegistrationPage() {
-        this.inputValidationComponent = new InputValidationComponent();
         this.driver = DriverManager.getDriver();
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         PageFactory.initElements(driver, this);
+        this.inputValidationComponent = new InputValidationComponent();
+        this.stepIndicatorComponent = new StepIndicatorComponent(); // <-- Инициализируем компонент
     }
 
     public String getPageTitleHint() {
-        // Убедимся, что модальное окно видимо, ожидая заголовок.
         wait.until(ExpectedConditions.visibilityOf(pageTitleHint));
-        return pageTitleHint.getText(); // Возвращаем текст "Вы вошли как Пользоватиль"
+        return pageTitleHint.getText();
     }
 
     public String getSelectedServiceText() {
@@ -80,21 +78,18 @@ public class UserRegistrationPage {
 
     /**
      * Заполняет форму данных заявителя, используя Value Object.
+     * Поля очищаются перед вводом.
      * @param data Объект ApplicantData, содержащий данные заявителя.
      */
     public void fillApplicantData(ApplicantData data) {
-        // Ожидаем видимости хотя бы одного поля, чтобы убедиться, что форма загружена
-        wait.until(ExpectedConditions.visibilityOf(passportNumberField)); // Ждем именно паспортного поля, так как оно обязательное
+        wait.until(ExpectedConditions.visibilityOf(passportNumberField));
 
-        // Для каждого поля используем Optional.ofNullable для безопасного заполнения,
-        // только если данные не null.
-        // Очищаем поля перед вводом, чтобы избежать наложения данных в многошаговых тестах
-        if (data.getLastName() != null) { lastNameField.clear(); lastNameField.sendKeys(data.getLastName()); }
-        if (data.getFirstName() != null) { firstNameField.clear(); firstNameField.sendKeys(data.getFirstName()); }
-        if (data.getMiddleName() != null) { middleNameField.clear(); middleNameField.sendKeys(data.getMiddleName()); }
-        if (data.getPhone() != null) { phoneField.clear(); phoneField.sendKeys(data.getPhone()); }
-        if (data.getPassportNumber() != null) { passportNumberField.clear(); passportNumberField.sendKeys(data.getPassportNumber()); }
-        if (data.getAddress() != null) { addressField.clear(); addressField.sendKeys(data.getAddress()); }
+        Optional.ofNullable(data.getLastName()).ifPresent(val -> { lastNameField.clear(); lastNameField.sendKeys(val); });
+        Optional.ofNullable(data.getFirstName()).ifPresent(val -> { firstNameField.clear(); firstNameField.sendKeys(val); });
+        Optional.ofNullable(data.getMiddleName()).ifPresent(val -> { middleNameField.clear(); middleNameField.sendKeys(val); });
+        Optional.ofNullable(data.getPhone()).ifPresent(val -> { phoneField.clear(); phoneField.sendKeys(val); });
+        Optional.ofNullable(data.getPassportNumber()).ifPresent(val -> { passportNumberField.clear(); passportNumberField.sendKeys(val); });
+        Optional.ofNullable(data.getAddress()).ifPresent(val -> { addressField.clear(); addressField.sendKeys(val); });
     }
 
     // Методы для очистки полей
@@ -108,7 +103,6 @@ public class UserRegistrationPage {
     }
     public void clearAddressField() { addressField.clear(); }
 
-
     public void clickNextButton() {
         wait.until(ExpectedConditions.elementToBeClickable(nextButton)).click();
     }
@@ -117,28 +111,14 @@ public class UserRegistrationPage {
         wait.until(ExpectedConditions.elementToBeClickable(closeButton)).click();
     }
 
-    /**
-     * Проверяет, доступна ли кнопка "Далее" для клика.
-     * Мы используем тот же локатор, что и для кнопки, который специально исключает "disabled" состояние.
-     * Если кнопка disabled, `nextButton` не будет найден по этому локатору.
-     * @return true, если кнопка "Далее" активна, иначе false.
-     */
     public boolean isNextButtonEnabled() {
         try {
             return nextButton.isEnabled();
         } catch (org.openqa.selenium.NoSuchElementException e) {
-            // Если элемент не найден, значит он либо не существует, либо disabled.
-            // В нашем случае локатор уже исключает disabled состояние, так что это значит, что кнопка неактивна.
             return false;
         }
     }
 
-    /**
-     * Проверяет, подсвечено ли поле красным (для обязательных полей).
-     *
-     * @param fieldName Название поля (Фамилия, Имя, Отчество, Телефон, Номер паспорта, Адрес прописки).
-     * @return true, если поле подсвечено красным, иначе false.
-     */
     public boolean isFieldHighlightedRed(String fieldName) {
         By fieldLocator;
         switch (fieldName.toLowerCase()) {
@@ -150,15 +130,20 @@ public class UserRegistrationPage {
             case "адрес прописки": fieldLocator = By.id("TextInputField-6"); break;
             default: throw new IllegalArgumentException("Неизвестное поле для проверки подсветки: " + fieldName);
         }
-        // Используем компонент для проверки
         return inputValidationComponent.isFieldHighlightedInRed(fieldLocator);
     }
 
-    // Клик на свободную область
     public void clickOnFreeArea() {
         WebElement freeArea = new WebDriverWait(DriverManager.getDriver(), Duration.ofSeconds(5))
                 .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h2[contains(@class, 'MuiDialogTitle-root')]/span")));
         freeArea.click();
+    }
 
+    /**
+     * Возвращает экземпляр StepIndicatorComponent для работы с индикаторами шагов.
+     * @return StepIndicatorComponent.
+     */
+    public StepIndicatorComponent getStepIndicatorComponent() {
+        return stepIndicatorComponent;
     }
 }
